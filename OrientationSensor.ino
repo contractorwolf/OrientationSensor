@@ -63,9 +63,6 @@ void setup(void)
 {
   Serial.begin(9600);
   
-  
-  SerialIdentificationHeader();
-  
   /* Initialise the sensor */
   if(!bno.begin())
   {
@@ -82,13 +79,7 @@ void setup(void)
   bno.setExtCrystalUse(true);
 }
 
-void SerialIdentificationHeader(){
-  Serial.println("\r\n------------------------------------");  
-  Serial.println("------------------------------------"); 
-  Serial.println("Orientation Sensor Test");
-  Serial.println("------------------------------------");   
-  Serial.println("");
-}
+
 
 /**************************************************************************/
 /*
