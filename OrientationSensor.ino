@@ -32,7 +32,14 @@
 
 
 float horizontal_angle = 0;
+float horizontal_offset = 0;
+
+
 float verticle_angle = 0;
+float verticle_offset = 0;
+
+
+
 int incoming = 0;
 
    
@@ -140,12 +147,12 @@ void loop(void)
   //CONVERT OUTPUT FROM Adafruit_BNO055
   //**************************************************
   if(event.orientation.x > 180){
-    horizontal_angle = event.orientation.x -360;
+    horizontal_angle = (event.orientation.x -360) + horizontal_offset;
   }else{
-    horizontal_angle = event.orientation.x;
+    horizontal_angle = event.orientation.x + horizontal_offset;
   }
   
-  verticle_angle = event.orientation.y;
+  verticle_angle = event.orientation.y + verticle_offset;
   //
 
 
@@ -156,12 +163,19 @@ void loop(void)
   
   Serial.print("\thorizontal angle: ");
   Serial.print(horizontal_angle, 4);   
+
+    Serial.print("\thorizontal offest: ");
+  Serial.print(horizontal_offset, 4);   
   
   Serial.print("\tY: ");
   Serial.print(event.orientation.y, 4);
 
   Serial.print("\tverticle angle: ");
   Serial.print(verticle_angle, 4);   
+
+  Serial.print("\tverticle offest: ");
+  Serial.print(verticle_offset, 4);   
+  
 
   Serial.print("\tZ: ");
   Serial.print(event.orientation.z, 4);
@@ -177,6 +191,15 @@ void loop(void)
   if(incoming==1){
     Mouse.move((int)horizontal_angle, (int)verticle_angle, 0);
   }
+
+  if(incoming==2){
+    horizontal_offset = -horizontal_angle;
+    verticle_offset = -verticle_angle;
+    incoming=0;
+  }
+
+
+  
   //************************************************************
   
   delay(BNO055_SAMPLERATE_DELAY_MS);
