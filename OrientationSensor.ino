@@ -28,7 +28,13 @@
 */
 
 /* Set the delay between fresh samples EXPECT HIGH REFRESH*/
-#define BNO055_SAMPLERATE_DELAY_MS (20)
+#define BNO055_SAMPLERATE_DELAY_MS (10)
+
+
+float horizontal_angle = 0;
+float verticle_angle = 0;
+int incoming = 0;
+
    
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
@@ -37,11 +43,17 @@ Adafruit_BNO055 bno = Adafruit_BNO055(55);
     Displays some basic information on this sensor from the unified
     sensor API sensor_t type (see Adafruit_Sensor for more information)
 */
+
 /**************************************************************************/
 void displaySensorDetails(void)
 {
   sensor_t sensor;
   bno.getSensor(&sensor);
+  
+  
+  
+  
+  
   Serial.println("------------------------------------");
   Serial.print  ("Sensor:       "); Serial.println(sensor.name);
   Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);
@@ -50,8 +62,12 @@ void displaySensorDetails(void)
   Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println(" xxx");
   Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println(" xxx");  
   Serial.println("------------------------------------");
+
   Serial.println("");
-  delay(500);
+
+  Serial.println("waiting 2 seconds");
+  
+  delay(2000);
 }
 
 /**************************************************************************/
@@ -62,7 +78,14 @@ void displaySensorDetails(void)
 void setup(void) 
 {
   Serial.begin(9600);
+
+
+
   
+
+  
+  Serial.println("\r\nORIENTATION SENSOR STARTED");
+  delay(1000);
   /* Initialise the sensor */
   if(!bno.begin())
   {
@@ -77,6 +100,20 @@ void setup(void)
   displaySensorDetails();
 
   bno.setExtCrystalUse(true);
+
+
+  sensors_event_t event; 
+  bno.getEvent(&event);
+
+
+
+
+
+  delay(3000);
+
+    
+
+  Mouse.begin();
 }
 
 
@@ -92,27 +129,55 @@ void loop(void)
   /* Get a new sensor event */ 
   sensors_event_t event; 
   bno.getEvent(&event);
+
+  while (Serial.available() > 0) {
+
+    // look for the next valid integer in the incoming serial stream:
+    incoming = Serial.parseInt();
+
+  }
+
+  //CONVERT OUTPUT FROM Adafruit_BNO055
+  //**************************************************
+  if(event.orientation.x > 180){
+    horizontal_angle = event.orientation.x -360;
+  }else{
+    horizontal_angle = event.orientation.x;
+  }
   
-  /* Display the floating point data */
+  verticle_angle = event.orientation.y;
+  //
+
+
+  //DISPLAY DATA FROM Adafruit_BNO055
+  //*************************************************************
   Serial.print("X: ");
   Serial.print(event.orientation.x, 4);     
   
-  Serial.print("\torientation: ");
-  if(event.orientation.x > 180){
-    Serial.print(-(360 - event.orientation.x), 4);    
-  }else{
-    Serial.print(event.orientation.x, 4);   
-  }
+  Serial.print("\thorizontal angle: ");
+  Serial.print(horizontal_angle, 4);   
   
   Serial.print("\tY: ");
   Serial.print(event.orientation.y, 4);
+
+  Serial.print("\tverticle angle: ");
+  Serial.print(verticle_angle, 4);   
+
   Serial.print("\tZ: ");
   Serial.print(event.orientation.z, 4);
-  
+
   Serial.print("\tmillis:: ");
   Serial.print(millis()); 
   
   Serial.println("");
+
+  //ACT ON DATA
+  //************************************************************
+
+  if(incoming==1){
+    Mouse.move((int)horizontal_angle, (int)verticle_angle, 0);
+  }
+  //************************************************************
   
   delay(BNO055_SAMPLERATE_DELAY_MS);
 }
