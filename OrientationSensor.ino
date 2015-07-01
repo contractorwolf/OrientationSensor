@@ -3,29 +3,6 @@
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
 
-/* This driver uses the Adafruit unified sensor library (Adafruit_Sensor),
-   which provides a common 'type' for sensor data and some helper functions.
-   
-   To use this driver you will also need to download the Adafruit_Sensor
-   library and include it in your libraries folder.
-
-   You should also assign a unique ID to this sensor for use with
-   the Adafruit Sensor API so that you can identify this particular
-   sensor in any data logs, etc.  To assign a unique ID, simply
-   provide an appropriate value in the constructor below (12345
-   is used by default in this example).
-   
-   Connections
-   ===========
-   Connect SCL to analog 5
-   Connect SDA to analog 4
-   Connect VDD to 3-5V DC
-   Connect GROUND to common ground
-    
-   History
-   =======
-   2015/MAR/03  - First release (KTOWN)
-*/
 
 /* Set the delay between fresh samples EXPECT HIGH REFRESH*/
 #define BNO055_SAMPLERATE_DELAY_MS (10)
@@ -39,19 +16,19 @@ float verticle_angle = 0;
 float verticle_offset = 0;
 
 
+const int buttonGndPin = 6;
+const int buttonPin = 7;
+
+int buttonState = 0;
+int prevButtonState = 0;
 
 int incoming = 0;
 
    
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
-/**************************************************************************/
-/*
-    Displays some basic information on this sensor from the unified
-    sensor API sensor_t type (see Adafruit_Sensor for more information)
-*/
 
-/**************************************************************************/
+
 void displaySensorDetails(void)
 {
   sensor_t sensor;
@@ -109,11 +86,11 @@ void setup(void)
   bno.setExtCrystalUse(true);
 
 
-  sensors_event_t event; 
-  bno.getEvent(&event);
 
-
-
+  pinMode(buttonGndPin, OUTPUT); 
+  digitalWrite(buttonGndPin, LOW); 
+      
+  pinMode(buttonPin, INPUT);  
 
 
   delay(3000);
@@ -137,12 +114,7 @@ void loop(void)
   sensors_event_t event; 
   bno.getEvent(&event);
 
-  while (Serial.available() > 0) {
 
-    // look for the next valid integer in the incoming serial stream:
-    incoming = Serial.parseInt();
-
-  }
 
   //CONVERT OUTPUT FROM Adafruit_BNO055
   //**************************************************
@@ -153,7 +125,15 @@ void loop(void)
   }
   
   verticle_angle = event.orientation.y + verticle_offset;
-  //
+  //CONVERT OUTPUT FROM Adafruit_BNO055
+
+
+
+  //get current button state
+  buttonState = digitalRead(buttonPin);
+
+
+
 
 
   //DISPLAY DATA FROM Adafruit_BNO055
@@ -161,44 +141,59 @@ void loop(void)
   Serial.print("X: ");
   Serial.print(event.orientation.x, 4);     
   
-  Serial.print("\thorizontal angle: ");
+  Serial.print("  horizontal angle: ");
   Serial.print(horizontal_angle, 4);   
 
-    Serial.print("\thorizontal offest: ");
+    Serial.print("  horizontal offest: ");
   Serial.print(horizontal_offset, 4);   
   
-  Serial.print("\tY: ");
+  Serial.print("  Y: ");
   Serial.print(event.orientation.y, 4);
 
-  Serial.print("\tverticle angle: ");
+  Serial.print("  verticle angle: ");
   Serial.print(verticle_angle, 4);   
 
-  Serial.print("\tverticle offest: ");
+  Serial.print("  verticle offest: ");
   Serial.print(verticle_offset, 4);   
   
 
-  Serial.print("\tZ: ");
+  Serial.print("  Z: ");
   Serial.print(event.orientation.z, 4);
 
-  Serial.print("\tmillis:: ");
+  Serial.print("  button: ");
+  Serial.print(buttonState);
+
+  
+
+  Serial.print("  millis:: ");
   Serial.print(millis()); 
   
   Serial.println("");
 
+
+
   //ACT ON DATA
   //************************************************************
-
-  if(incoming==1){
-    Mouse.move((int)horizontal_angle, (int)verticle_angle, 0);
-  }
-
-  if(incoming==2){
-    horizontal_offset = -horizontal_angle;
-    verticle_offset = -verticle_angle;
-    incoming=0;
+  //if button is on then move mouse
+  if(buttonState==1){
+      Mouse.move((int)horizontal_angle, (int)verticle_angle, 0);
   }
 
 
+  //check that the button was off but is now on (change of state)
+  if(buttonState==1&&prevButtonState==0){
+    Serial.println("RESET CENTER");
+    if(event.orientation.x > 180){
+      horizontal_offset = -(event.orientation.x -360);
+    }else{
+      horizontal_offset = -event.orientation.x;
+    }
+  
+    verticle_offset = -(event.orientation.y);
+  }
+
+  //save the current button state for the next loop
+  prevButtonState = buttonState;
   
   //************************************************************
   
