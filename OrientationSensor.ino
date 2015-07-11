@@ -16,6 +16,13 @@ float verticle_angle = 0;
 float verticle_offset = 0;
 
 
+
+float currentHorizontalAngle = 0;
+float currentVerticleAngle = 0;
+
+float lastHorizontalAngle = 0;
+float lastVerticleAngle = 0;
+
 const int buttonGndPin = 6;
 const int buttonPin = 7;
 
@@ -141,43 +148,74 @@ void loop(void)
   Serial.print("X: ");
   Serial.print(event.orientation.x, 4);     
   
-  Serial.print("  horizontal angle: ");
-  Serial.print(horizontal_angle, 4);   
-
-    Serial.print("  horizontal offest: ");
+  Serial.print("  horizontal offest: ");
   Serial.print(horizontal_offset, 4);   
   
+  Serial.print("  HOR ANGLE: ");
+  Serial.print(horizontal_angle, 4);   
+
   Serial.print("  Y: ");
   Serial.print(event.orientation.y, 4);
 
-  Serial.print("  verticle angle: ");
+
+  Serial.print("  verticle offset: ");
+  Serial.print(verticle_offset, 4);   
+
+  Serial.print("  VERT ANGLE: ");
   Serial.print(verticle_angle, 4);   
 
-  Serial.print("  verticle offest: ");
-  Serial.print(verticle_offset, 4);   
+
+
+
+
+  
   
 
   Serial.print("  Z: ");
   Serial.print(event.orientation.z, 4);
 
-  Serial.print("  button: ");
+  Serial.print("  SW: ");
   Serial.print(buttonState);
 
   
 
-  Serial.print("  millis:: ");
+  Serial.print("  T: ");
   Serial.print(millis()); 
-  
-  Serial.println("");
 
+  currentHorizontalAngle = (horizontal_angle - lastHorizontalAngle)*50;
+  currentVerticleAngle = (verticle_angle - lastVerticleAngle)*40;
+
+  Serial.print("  moveH: ");
+  Serial.print((int)currentHorizontalAngle); 
+  
+  Serial.print("  moveV: ");
+  Serial.print((int)currentVerticleAngle); 
 
 
   //ACT ON DATA
   //************************************************************
   //if button is on then move mouse
   if(buttonState==1){
-      Mouse.move((int)horizontal_angle, (int)verticle_angle, 0);
+
+
+      
+    
+      Mouse.move((int)currentHorizontalAngle, (int)currentVerticleAngle, 0);
+      
+
+  
+
+
+      lastHorizontalAngle = horizontal_angle;
+      lastVerticleAngle = verticle_angle;
+      
   }
+
+
+  Serial.println("");
+
+
+
 
 
   //check that the button was off but is now on (change of state)
