@@ -5,7 +5,7 @@
 
 
 /* Set the delay between fresh samples EXPECT HIGH REFRESH*/
-#define BNO055_SAMPLERATE_DELAY_MS (50)
+#define BNO055_SAMPLERATE_DELAY_MS (10)
 
 
 float horizontal_angle = 0;
@@ -32,7 +32,7 @@ int prevButtonState = 0;
 int incoming = 0;
 
    
-Adafruit_BNO055 bno = Adafruit_BNO055(10);
+Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
 
 
