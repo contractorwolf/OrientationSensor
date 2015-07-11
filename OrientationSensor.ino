@@ -5,7 +5,7 @@
 
 
 /* Set the delay between fresh samples EXPECT HIGH REFRESH*/
-#define BNO055_SAMPLERATE_DELAY_MS (10)
+#define BNO055_SAMPLERATE_DELAY_MS (50)
 
 
 float horizontal_angle = 0;
@@ -32,7 +32,7 @@ int prevButtonState = 0;
 int incoming = 0;
 
    
-Adafruit_BNO055 bno = Adafruit_BNO055(55);
+Adafruit_BNO055 bno = Adafruit_BNO055(10);
 
 
 
@@ -165,12 +165,6 @@ void loop(void)
   Serial.print(verticle_angle, 4);   
 
 
-
-
-
-  
-  
-
   Serial.print("  Z: ");
   Serial.print(event.orientation.z, 4);
 
@@ -215,7 +209,8 @@ void loop(void)
   Serial.println("");
 
 
-
+  
+  
 
 
   //check that the button was off but is now on (change of state)
