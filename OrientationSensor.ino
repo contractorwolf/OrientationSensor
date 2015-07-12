@@ -3,19 +3,14 @@
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
 
-
 /* Set the delay between fresh samples EXPECT HIGH REFRESH*/
-#define BNO055_SAMPLERATE_DELAY_MS (10)
-
+#define BNO055_SAMPLERATE_DELAY_MS (5)
 
 float horizontal_angle = 0;
 float horizontal_offset = 0;
 
-
 float verticle_angle = 0;
 float verticle_offset = 0;
-
-
 
 float currentHorizontalAngle = 0;
 float currentVerticleAngle = 0;
@@ -31,19 +26,12 @@ int prevButtonState = 0;
 
 int incoming = 0;
 
-   
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
-
-
 
 void displaySensorDetails(void)
 {
   sensor_t sensor;
   bno.getSensor(&sensor);
-  
-  
-  
-  
   
   Serial.println("------------------------------------");
   Serial.print  ("Sensor:       "); Serial.println(sensor.name);
@@ -69,12 +57,6 @@ void displaySensorDetails(void)
 void setup(void) 
 {
   Serial.begin(9600);
-
-
-
-  
-
-  
   Serial.println("\r\nORIENTATION SENSOR STARTED");
   delay(1000);
   /* Initialise the sensor */
@@ -84,7 +66,6 @@ void setup(void)
     Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
     while(1);
   }
-  
   delay(1000);
     
   /* Display some basic information on this sensor */
@@ -92,22 +73,15 @@ void setup(void)
 
   bno.setExtCrystalUse(true);
 
-
-
   pinMode(buttonGndPin, OUTPUT); 
   digitalWrite(buttonGndPin, LOW); 
       
   pinMode(buttonPin, INPUT);  
-
-
+  
   delay(3000);
-
-    
-
+  
   Mouse.begin();
 }
-
-
 
 /**************************************************************************/
 /*
@@ -121,8 +95,6 @@ void loop(void)
   sensors_event_t event; 
   bno.getEvent(&event);
 
-
-
   //CONVERT OUTPUT FROM Adafruit_BNO055
   //**************************************************
   if(event.orientation.x > 180){
@@ -130,18 +102,16 @@ void loop(void)
   }else{
     horizontal_angle = event.orientation.x + horizontal_offset;
   }
-  
+ 
   verticle_angle = event.orientation.y + verticle_offset;
   //CONVERT OUTPUT FROM Adafruit_BNO055
 
-
+  //convert to mouse moves, by subtracting where you were last
+  currentHorizontalAngle = (horizontal_angle - lastHorizontalAngle)*50;
+  currentVerticleAngle = (verticle_angle - lastVerticleAngle)*40;
 
   //get current button state
   buttonState = digitalRead(buttonPin);
-
-
-
-
 
   //DISPLAY DATA FROM Adafruit_BNO055
   //*************************************************************
@@ -156,63 +126,39 @@ void loop(void)
 
   Serial.print("  Y: ");
   Serial.print(event.orientation.y, 4);
-
-
+  
   Serial.print("  verticle offset: ");
   Serial.print(verticle_offset, 4);   
 
   Serial.print("  VERT ANGLE: ");
   Serial.print(verticle_angle, 4);   
-
-
-  Serial.print("  Z: ");
-  Serial.print(event.orientation.z, 4);
+  //Serial.print("  Z: ");
+  //Serial.print(event.orientation.z, 4);
 
   Serial.print("  SW: ");
   Serial.print(buttonState);
 
-  
-
   Serial.print("  T: ");
   Serial.print(millis()); 
-
-  currentHorizontalAngle = (horizontal_angle - lastHorizontalAngle)*50;
-  currentVerticleAngle = (verticle_angle - lastVerticleAngle)*40;
-
+  
   Serial.print("  moveH: ");
   Serial.print((int)currentHorizontalAngle); 
   
   Serial.print("  moveV: ");
   Serial.print((int)currentVerticleAngle); 
 
+  Serial.println("");
 
   //ACT ON DATA
   //************************************************************
   //if button is on then move mouse
   if(buttonState==1){
-
-
-      
-    
       Mouse.move((int)currentHorizontalAngle, (int)currentVerticleAngle, 0);
-      
-
-  
-
-
+   
       lastHorizontalAngle = horizontal_angle;
       lastVerticleAngle = verticle_angle;
-      
   }
-
-
-  Serial.println("");
-
-
-  
-  
-
-
+ 
   //check that the button was off but is now on (change of state)
   if(buttonState==1&&prevButtonState==0){
     Serial.println("RESET CENTER");
